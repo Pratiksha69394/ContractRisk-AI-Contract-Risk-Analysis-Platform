@@ -15,8 +15,6 @@ yarn-error.log*
 # env files
 .env*
 
-# typescript
-*.tsbuildinfo
 
 # misc
 .DS_Store
