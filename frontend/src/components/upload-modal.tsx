@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type DragEvent, type ChangeEvent } from 'react'
 import { FileText, Upload, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,7 +22,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
   const [dragActive, setDragActive] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  const handleDrag = (e: React.DragEvent) => {
+  const handleDrag = (e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -32,7 +32,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
     }
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
@@ -43,7 +43,7 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0])
     }
