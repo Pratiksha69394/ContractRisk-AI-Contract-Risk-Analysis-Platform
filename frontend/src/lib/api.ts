@@ -5,7 +5,7 @@ const getApiBaseUrl = () => {
     return '';
   }
   // On Vercel/production, use absolute URL from env var
-  return import.meta.env.VITE_API_URL || '';
+  return import.meta.env.VITE_API_URL || 'https://contractrisk-ai-contract-risk-analysis-ueyx.onrender.com';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
