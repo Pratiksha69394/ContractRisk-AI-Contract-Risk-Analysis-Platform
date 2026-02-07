@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { apiRequest } from '@/lib/api'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -44,23 +46,14 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const result = await apiRequest<{ token: string; user: { id: string; name: string; email: string; role?: string } }>('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           name: data.name,
           email: data.email,
           password: data.password,
         }),
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
-      }
 
       // Save token and update auth state
       login(result.token, {

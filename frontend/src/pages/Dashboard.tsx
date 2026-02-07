@@ -8,6 +8,7 @@ import EmptyState from '@/components/empty-state'
 import UploadModal from '@/components/upload-modal'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { authenticatedApiRequest, apiRequest } from '@/lib/api'
 
 interface Contract {
   id: string
@@ -56,13 +57,7 @@ export default function Home() {
 
   const fetchContracts = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/contracts', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const data = await response.json()
+      const data = await authenticatedApiRequest<any[]>('/api/contracts')
       
       if (Array.isArray(data)) {
         // Deduplicate contracts by ID
@@ -109,8 +104,6 @@ export default function Home() {
   }
 
   const handleUpload = async (file: File, contractId: string) => {
-    const token = localStorage.getItem('token')
-    
     // Check if this contract is already being processed (prevent duplicates)
     if (processingContractIds.current.has(contractId)) {
       console.warn('Contract with this ID is already being processed:', contractId)
@@ -136,21 +129,13 @@ export default function Home() {
 
     try {
       // Save contract to backend first
-      const saveResponse = await fetch('/api/contracts', {
+      await authenticatedApiRequest('/api/contracts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify(newContract),
       })
 
-      if (!saveResponse.ok) {
-        throw new Error('Failed to save contract')
-      }
-
       // Then run analysis
-      await analyzeContract(contractId, file, token)
+      await analyzeContract(contractId, file)
     } catch (error) {
       console.error('Upload error:', error)
       // Update contract status to show error
@@ -163,29 +148,24 @@ export default function Home() {
     }
   }
 
-  const analyzeContract = async (contractId: string, file: File, token: string) => {
+  const analyzeContract = async (contractId: string, file: File) => {
     try {
       const content = await file.text()
 
-      const response = await fetch('/api/analyze', {
+      const analysis = await authenticatedApiRequest<{
+        riskScore: number;
+        riskLevel: string;
+        summary: string;
+        keyRisks: any[];
+        recommendations: string[];
+      }>('/api/analyze', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify({
           contractContent: content,
           contractName: file.name,
           contractId: contractId,
         }),
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Analysis failed')
-      }
-
-      const analysis = await response.json()
 
       const updatedContract = {
         id: contractId,
@@ -203,12 +183,8 @@ export default function Home() {
       setContracts((prev) => prev.map((c) => (c.id === contractId ? updatedContract : c)))
 
       // Update contract on backend
-      await fetch(`/api/contracts/${contractId}`, {
+      await apiRequest(`/api/contracts/${contractId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify(updatedContract),
       })
     } catch (error) {
@@ -247,19 +223,10 @@ export default function Home() {
   }
 
   const handleDeleteContract = async (contractId: string) => {
-    const token = localStorage.getItem('token')
-    
     try {
-      const response = await fetch(`/api/contracts/${contractId}`, {
+      await authenticatedApiRequest(`/api/contracts/${contractId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete contract')
-      }
 
       // Remove contract from local state
       setContracts((prev) => prev.filter((c) => c.id !== contractId))

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { apiRequest } from '@/lib/api'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -39,22 +40,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setError(null)
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const result = await apiRequest<{ token: string; user: { id: string; name: string; email: string; role?: string } }>('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           email: data.email,
           password: data.password,
         }),
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed')
-      }
 
       // Save token and update auth state
       login(result.token, {

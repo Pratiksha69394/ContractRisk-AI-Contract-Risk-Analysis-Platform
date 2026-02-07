@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { authenticatedApiRequest } from '@/lib/api'
 
 interface User {
   id: string
@@ -30,25 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const userData = await authenticatedApiRequest<{ _id?: string; id: string; name: string; email: string; role?: string }>('/api/auth/me')
+      setUser({
+        id: userData._id || userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role
       })
-
-      if (response.ok) {
-        const userData = await response.json()
-        setUser({
-          id: userData._id || userData.id,
-          name: userData.name,
-          email: userData.email,
-          role: userData.role
-        })
-      } else {
-        // Token is invalid or expired
-        localStorage.removeItem('token')
-        setUser(null)
-      }
     } catch (error) {
       console.error('Auth check failed:', error)
       localStorage.removeItem('token')

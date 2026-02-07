@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Settings, User, Mail, Building } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { authenticatedApiRequest } from '@/lib/api'
 
 interface UserProfile {
   name: string
@@ -26,22 +27,13 @@ export default function Profile() {
 
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const data = await authenticatedApiRequest<{ name: string; email: string; role?: string; company?: string }>('/api/auth/me')
+      setUserData({
+        name: data.name,
+        email: data.email,
+        role: data.role || 'User',
+        company: data.company || ''
       })
-
-      if (response.ok) {
-        const data = await response.json()
-        setUserData({
-          name: data.name,
-          email: data.email,
-          role: data.role || 'User',
-          company: data.company || ''
-        })
-      }
     } catch (error) {
       console.error('Failed to fetch user profile:', error)
     } finally {
