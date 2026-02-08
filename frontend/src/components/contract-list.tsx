@@ -71,55 +71,57 @@ export default function ContractList({ contracts, onViewContract, onDeleteContra
 
   return (
     <>
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1">
         {contracts.map((contract) => (
-          <Card key={contract.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewContract(contract.id)}>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-slate-100 rounded-lg">
-                    <FileText className="w-6 h-6 text-slate-600" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-lg text-slate-900">{contract.name}</h3>
-                      {getRiskIcon(contract.riskLevel)}
+          <Card key={contract.id} className="hover:shadow-md transition-shadow cursor-pointer touch-manipulation" onClick={() => onViewContract(contract.id)}>
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                    <div className="p-2 sm:p-2.5 bg-slate-100 rounded-lg flex-shrink-0">
+                      <FileText className="w-5 h-5 sm:w-5 sm:h-5 text-slate-600" />
                     </div>
-                    <p className="text-sm text-slate-500 mb-3">Uploaded on {contract.uploadDate}</p>
-                    {contract.summary && (
-                      <p className="text-slate-600 text-sm line-clamp-2">{contract.summary}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+                        <h3 className="font-semibold text-sm sm:text-base text-slate-900 truncate">{contract.name}</h3>
+                        {getRiskIcon(contract.riskLevel)}
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-500">{contract.uploadDate}</p>
+                      {contract.summary && (
+                        <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 mt-1">{contract.summary}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 sm:gap-1.5 flex-shrink-0">
+                    <Badge className={`${getRiskColor(contract.riskLevel)} border capitalize text-xs`}>
+                      {contract.riskLevel}
+                    </Badge>
+                    {contract.status === 'analyzed' && (
+                      <span className="text-xs sm:text-sm font-medium text-slate-700">{contract.riskScore}%</span>
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <Badge className={`${getRiskColor(contract.riskLevel)} border capitalize`}>
-                    {contract.riskLevel} risk
-                  </Badge>
-                  {contract.status === 'analyzed' && (
-                    <span className="text-sm font-medium text-slate-700">{contract.riskScore}%</span>
-                  )}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <Badge variant={contract.status === 'analyzed' ? 'default' : 'secondary'} className="capitalize text-xs">
+                      {contract.status}
+                    </Badge>
+                    {onDeleteContract && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 sm:p-0 touch-manipulation"
+                        onClick={(e) => handleDeleteClick(e, contract.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 px-2 text-xs sm:text-sm touch-manipulation">
+                    View
+                    <ArrowRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4" />
+                  </Button>
                 </div>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge variant={contract.status === 'analyzed' ? 'default' : 'secondary'} className="capitalize">
-                    {contract.status}
-                  </Badge>
-                  {onDeleteContract && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={(e) => handleDeleteClick(e, contract.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
-                  View Details
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -127,7 +129,7 @@ export default function ContractList({ contracts, onViewContract, onDeleteContra
       </div>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="mx-4 max-w-sm sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <Trash2 className="h-5 w-5" />
@@ -137,11 +139,11 @@ export default function ContractList({ contracts, onViewContract, onDeleteContra
               Are you sure you want to delete "{getContractName(contractToDelete || '')}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="flex-1 sm:flex-none">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
+            <Button variant="destructive" onClick={handleConfirmDelete} className="flex-1 sm:flex-none">
               Delete
             </Button>
           </DialogFooter>

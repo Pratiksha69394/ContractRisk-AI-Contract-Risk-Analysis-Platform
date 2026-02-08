@@ -60,19 +60,19 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg mx-4">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Upload className="h-5 w-5" />
             Upload Contract
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Upload a contract document for AI-powered risk analysis
           </DialogDescription>
         </DialogHeader>
 
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center transition-colors touch-manipulation ${
             dragActive ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-slate-400'
           }`}
           onDragEnter={handleDrag}
@@ -80,19 +80,19 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <FileText className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-          <p className="text-sm text-slate-600 mb-2">
+          <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-slate-400 mb-3 sm:mb-4" />
+          <p className="text-sm sm:text-base text-slate-600 mb-2">
             Drag and drop your contract file here, or{' '}
             <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
               browse
               <input type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileChange} />
             </label>
           </p>
-          <p className="text-xs text-slate-500">Supports PDF, DOCX, and TXT files</p>
+          <p className="text-xs sm:text-sm text-slate-500">Supports PDF, DOCX, and TXT files</p>
 
           {selectedFile && (
             <div className="mt-4 p-3 bg-slate-100 rounded-lg">
-              <p className="text-sm font-medium text-slate-700">{selectedFile.name}</p>
+              <p className="text-sm font-medium text-slate-700 truncate">{selectedFile.name}</p>
               <p className="text-xs text-slate-500">
                 {(selectedFile.size / 1024).toFixed(2)} KB
               </p>
@@ -100,11 +100,11 @@ export default function UploadModal({ isOpen, onClose, onUpload }: UploadModalPr
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
             Cancel
           </Button>
-          <Button onClick={handleUpload} disabled={!selectedFile} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleUpload} disabled={!selectedFile} className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700">
             Analyze Contract
           </Button>
         </DialogFooter>

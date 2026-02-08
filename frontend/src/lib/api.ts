@@ -2,7 +2,8 @@ const getApiBaseUrl = () => {
   if (import.meta.env.DEV) {
     return '';
   }
-  return '';
+  // In production, use the same origin or configured API URL
+  return import.meta.env.VITE_API_URL || '';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

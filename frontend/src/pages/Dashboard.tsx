@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ContractList from '@/components/contract-list'
@@ -33,7 +31,6 @@ export default function Home() {
     status: [],
     dateRange: 'all',
   })
-  // Use a ref to track contract IDs that are currently being processed
   const processingContractIds = useRef<Set<string>>(new Set())
 
   const filteredContracts = useMemo(() => {
@@ -60,7 +57,6 @@ export default function Home() {
       const data = await authenticatedApiRequest<any[]>('/api/contracts')
       
       if (Array.isArray(data)) {
-        // Deduplicate contracts by ID
         const uniqueContracts = data.reduce((acc, contract) => {
           const existingIndex = acc.findIndex(c => c.id === contract._id || c.id === contract.id)
           if (existingIndex === -1) {
@@ -76,7 +72,6 @@ export default function Home() {
               recommendations: contract.recommendations
             })
           } else {
-            // Keep the more recent one (first one is usually most recent due to sort)
             acc[existingIndex] = {
               id: contract._id || contract.id,
               name: contract.name,
@@ -104,16 +99,13 @@ export default function Home() {
   }
 
   const handleUpload = async (file: File, contractId: string) => {
-    // Check if this contract is already being processed (prevent duplicates)
     if (processingContractIds.current.has(contractId)) {
       console.warn('Contract with this ID is already being processed:', contractId)
       return
     }
     
-    // Mark this contract ID as being processed
     processingContractIds.current.add(contractId)
 
-    // First, save the contract to the backend with "analyzing" status
     const newContract: Contract = {
       id: contractId,
       name: file.name,
@@ -123,27 +115,22 @@ export default function Home() {
       riskLevel: 'pending',
     }
 
-    // Add to local state
     setContracts((prev) => [newContract, ...prev])
     setIsUploadOpen(false)
 
     try {
-      // Save contract to backend first
       await authenticatedApiRequest('/api/contracts', {
         method: 'POST',
         body: JSON.stringify(newContract),
       })
 
-      // Then run analysis
       await analyzeContract(contractId, file)
     } catch (error) {
       console.error('Upload error:', error)
-      // Update contract status to show error
       setContracts((prev) =>
         prev.map((c) => (c.id === contractId ? { ...c, status: 'analyzing', riskLevel: 'pending' } : c)),
       )
     } finally {
-      // Remove from processing set when done
       processingContractIds.current.delete(contractId)
     }
   }
@@ -153,11 +140,11 @@ export default function Home() {
       const content = await file.text()
 
       const analysis = await authenticatedApiRequest<{
-        riskScore: number;
-        riskLevel: string;
-        summary: string;
-        keyRisks: any[];
-        recommendations: string[];
+        riskScore: number
+        riskLevel: string
+        summary: string
+        keyRisks: any[]
+        recommendations: string[]
       }>('/api/analyze', {
         method: 'POST',
         body: JSON.stringify({
@@ -179,17 +166,14 @@ export default function Home() {
         recommendations: analysis.recommendations,
       }
 
-      // Update local state
       setContracts((prev) => prev.map((c) => (c.id === contractId ? updatedContract : c)))
 
-      // Update contract on backend
-      await apiRequest(`/api/contracts/${contractId}`, {
+      await apiRequest('/api/contracts/' + contractId, {
         method: 'PATCH',
         body: JSON.stringify(updatedContract),
       })
     } catch (error) {
       console.error('Analysis error:', error)
-      // Update contract status to show error
       setContracts((prev) =>
         prev.map((c) => (c.id === contractId ? { ...c, status: 'analyzing', riskLevel: 'pending' } : c)),
       )
@@ -224,11 +208,10 @@ export default function Home() {
 
   const handleDeleteContract = async (contractId: string) => {
     try {
-      await authenticatedApiRequest(`/api/contracts/${contractId}`, {
+      await authenticatedApiRequest('/api/contracts/' + contractId, {
         method: 'DELETE',
       })
 
-      // Remove contract from local state
       setContracts((prev) => prev.filter((c) => c.id !== contractId))
     } catch (error) {
       console.error('Delete error:', error)
@@ -238,28 +221,30 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-6 lg:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Contract Portfolio</h1>
-            <p className="text-slate-600 mt-2">Analyze and manage contract risks with AI-powered insights</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">Contract Portfolio</h1>
+            <p className="text-slate-600 mt-1 text-sm sm:text-base">Analyze and manage contract risks with AI-powered insights</p>
           </div>
           <Button
             onClick={() => setIsUploadOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white gap-2 w-full sm:w-auto"
+            className="bg-blue-600 hover:bg-blue-700 text-white gap-2 w-full sm:w-auto touch-manipulation"
           >
-            <Plus size={20} />
-            Upload Contract
+            <Plus size={18} />
+            <span>Upload Contract</span>
           </Button>
         </div>
 
         {!isLoading && contracts.length > 0 && (
-          <ContractSearchFilter
-            onSearch={setSearchQuery}
-            onFilterChange={setFilters}
-            onExport={handleExport}
-            contractCount={filteredContracts.length}
-          />
+          <div className="mb-5 sm:mb-6">
+            <ContractSearchFilter
+              onSearch={setSearchQuery}
+              onFilterChange={setFilters}
+              onExport={handleExport}
+              contractCount={filteredContracts.length}
+            />
+          </div>
         )}
 
         {!isLoading && contracts.length === 0 ? (
@@ -267,7 +252,7 @@ export default function Home() {
         ) : (
           <ContractList 
             contracts={filteredContracts} 
-            onViewContract={(id) => navigate(`/contract/${id}`)}
+            onViewContract={(id) => navigate('/contract/' + id)}
             onDeleteContract={handleDeleteContract}
           />
         )}

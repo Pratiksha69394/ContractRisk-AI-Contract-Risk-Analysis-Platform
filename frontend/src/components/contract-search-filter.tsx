@@ -29,7 +29,6 @@ export default function ContractSearchFilter({
   onSearch,
   onFilterChange,
   onExport,
-  contractCount,
 }: ContractSearchFilterProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [riskLevels, setRiskLevels] = useState<string[]>([])
@@ -57,23 +56,24 @@ export default function ContractSearchFilter({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-5 sm:mb-6">
+      <div className="relative flex-1 min-w-0">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
         <Input
           placeholder="Search contracts..."
           value={searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10"
+          className="pl-10 h-10 sm:h-11 w-full"
         />
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Filter size={18} />
-              Risk Level
+            <Button variant="outline" className="gap-2 whitespace-nowrap h-10 sm:h-11 flex-shrink-0 touch-manipulation">
+              <Filter size={16} />
+              <span className="hidden xs:inline sm:hidden md:inline">Risk</span>
+              <span className="hidden sm:inline">Risk Level</span>
               {riskLevels.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{riskLevels.length}</Badge>
               )}
@@ -105,9 +105,10 @@ export default function ContractSearchFilter({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <SlidersHorizontal size={18} />
-              Status
+            <Button variant="outline" className="gap-2 whitespace-nowrap h-10 sm:h-11 flex-shrink-0 touch-manipulation">
+              <SlidersHorizontal size={16} />
+              <span className="hidden xs:inline sm:hidden md:inline">Status</span>
+              <span className="hidden sm:inline">Status</span>
               {statuses.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{statuses.length}</Badge>
               )}
@@ -133,9 +134,10 @@ export default function ContractSearchFilter({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Download size={18} />
-              Export
+            <Button variant="outline" className="gap-2 whitespace-nowrap h-10 sm:h-11 flex-shrink-0 touch-manipulation">
+              <Download size={16} />
+              <span className="hidden xs:inline sm:hidden md:inline">Export</span>
+              <span className="hidden sm:inline">Export</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -156,4 +158,4 @@ export default function ContractSearchFilter({
     </div>
   )
 }
-
+    
