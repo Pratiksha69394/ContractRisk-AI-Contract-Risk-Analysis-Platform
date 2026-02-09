@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Settings, User, Mail, Building } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { authenticatedApiRequest } from '@/lib/api'
+import { useToast } from '@/hooks/use-toast'
 
 interface UserProfile {
   name: string
@@ -16,10 +18,15 @@ interface UserProfile {
 }
 
 export default function Profile() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
+  const { toast } = useToast()
   const [userData, setUserData] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    company: ''
+  })
 
   useEffect(() => {
     fetchUserProfile()
@@ -34,10 +41,61 @@ export default function Profile() {
         role: data.role || 'User',
         company: data.company || ''
       })
+      setFormData({
+        name: data.name || '',
+        company: data.company || ''
+      })
     } catch (error) {
       console.error('Failed to fetch user profile:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }))
+  }
+
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Name is required',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setSaving(true)
+    try {
+      const updatedUser = await authenticatedApiRequest<UserProfile>('/api/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify({
+          name: formData.name,
+          company: formData.company
+        })
+      })
+      
+      setUserData(updatedUser)
+      updateUser(updatedUser)
+      
+      toast({
+        title: 'Success',
+        description: 'Profile updated successfully'
+      })
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile. Please try again.',
+        variant: 'destructive'
+      })
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -96,23 +154,39 @@ export default function Profile() {
                   <User className="w-4 h-4" />
                   Full Name
                 </Label>
-                <Input id="name" defaultValue={displayUser.name} />
+                <Input 
+                  id="name" 
+                  value={formData.name} 
+                  onChange={handleInputChange}
+                  placeholder="Enter your full name"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email
                 </Label>
-                <Input id="email" type="email" defaultValue={displayUser.email} disabled className="bg-slate-50" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={displayUser.email} 
+                  disabled 
+                  className="bg-slate-50" 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company" className="flex items-center gap-2">
                   <Building className="w-4 h-4" />
                   Company
                 </Label>
-                <Input id="company" defaultValue={displayUser.company || 'Not specified'} />
+                <Input 
+                  id="company" 
+                  value={formData.company} 
+                  onChange={handleInputChange}
+                  placeholder="Enter your company name"
+                />
               </div>
-              <Button disabled={saving}>
+              <Button onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </CardContent>

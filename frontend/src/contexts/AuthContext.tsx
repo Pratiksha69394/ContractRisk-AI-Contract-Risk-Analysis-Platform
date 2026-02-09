@@ -15,6 +15,7 @@ interface AuthContextType {
   login: (token: string, user: User) => void
   logout: () => void
   checkAuth: () => Promise<void>
+  updateUser: (userData: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -58,6 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...userData } : null)
+  }, [])
+
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
@@ -69,7 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       login,
       logout,
-      checkAuth
+      checkAuth,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

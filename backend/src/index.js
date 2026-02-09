@@ -53,6 +53,16 @@ app.get('/api/auth/me', auth, async (req, res) => {
   res.json(user);
 });
 
+app.put('/api/auth/profile', auth, async (req, res) => {
+  const { name, company } = req.body;
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name, company },
+    { new: true, runValidators: true }
+  );
+  res.json(user);
+});
+
 app.get('/api/contracts', auth, async (req, res) => {
   const contracts = await Contract.find({ userId: req.user.id }).sort({ createdAt: -1 });
   res.json(contracts);
